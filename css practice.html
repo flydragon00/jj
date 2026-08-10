@@ -1,0 +1,173 @@
+
+<!-- saved from url=(0056)http://ggoreb.com/python/html/css_selector_practice.html -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>CSS 선택자 연습 페이지</title>
+<style>
+  body {
+    font-family: "맑은 고딕", sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  .wrapper {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+  }
+  .content {
+    flex: 1;
+  }
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 16px;
+    margin: 0;
+    padding: 12px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  table, th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+  .ad {
+    background: #f0f0f0;
+    padding: 12px;
+    margin: 8px 0;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+  }
+  footer {
+    padding: 16px;
+    text-align: center;
+    background: #eee;
+    margin-top: 20px;
+  }
+
+  /* CSS 코드 작성 */
+  
+</style>
+<style>
+    .info-box{font-size: 20px}
+    #product-list{border: 1px solid blue}
+    li{color: green}
+    td{ text-align: center;}
+    .product{background-color: yellow}
+    .ad{border: 1px solid red}
+    #gnb{
+        background-color:lightgray; 
+        color: white;
+    }
+    #price-table{font-size:18px}
+    [data-stock=out] {background-color: gray;}
+    [target="_blank"] {color: green;}
+    .highlight + tr {background-color: skyblue;}
+    .special ~ li {font-weight: bold;}
+
+</style>
+
+</head>
+<body>
+
+  <!-- GNB: 상단 전역 메뉴 -->
+  <header id="gnb" class="gnb">
+    <nav>
+      <ul>
+        <li><a href="#">홈</a></li>
+        <li><a href="#">상품</a></li>
+        <li><a href="#">고객센터</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="wrapper">
+
+    <!-- LNB: 왼쪽 카테고리 메뉴 -->
+    <aside id="lnb" class="lnb">
+      <h3>카테고리</h3>
+      <ul>
+        <li>전자제품</li>
+        <li>가전제품</li>
+        <li>생활용품</li>
+      </ul>
+    </aside>
+
+    <main class="content">
+
+      <!-- 상단 광고 -->
+      <div class="ad ad-top" id="ad-top">상단 광고 영역</div>
+
+      <h2>상품 가격표</h2>
+      <table id="price-table" class="price-table">
+        <thead>
+          <tr>
+            <th>상품명</th>
+            <th>가격</th>
+            <th data-type="status">상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-item" data-stock="in">
+            <td>노트북</td>
+            <td>1200000</td>
+            <td>판매중</td>
+          </tr>
+          <tr class="row-item highlight" data-stock="out">
+            <td>키보드</td>
+            <td>50000</td>
+            <td>품절</td>
+          </tr>
+          <tr class="row-item" data-stock="in">
+            <td>마우스</td>
+            <td>30000</td>
+            <td>판매중</td>
+          </tr>
+          <tr class="row-item" data-stock="in">
+            <td>모니터</td>
+            <td>250000</td>
+            <td>판매중</td>
+          </tr>e
+        </tbody>
+      </table>
+
+      <!-- 중간 광고 -->
+      <div class="ad ad-middle">중간 광고 영역</div>
+
+      <h2>상품 목록</h2>
+      <ul class="product-list" id="product-list">
+        <li class="product">사과</li>
+        <li class="product">바나나</li>
+        <li class="product special">체리 (특가)</li>
+        <li class="product">포도</li>
+        <li class="product">딸기</li>
+      </ul>
+
+      <div class="info-box">
+        <p class="desc">이 상품은 신선하게 배송됩니다.</p>
+        <span class="price" data-currency="KRW">10000원</span>
+        <a href="https://example.com" target="_blank" class="link">자세히 보기</a>
+      </div>
+
+    </main>
+
+    <!-- 사이드 광고 -->
+    <aside class="ad-sidebar">
+      <div class="ad">사이드 광고 1</div>
+      <div class="ad">사이드 광고 2</div>
+    </aside>
+
+  </div>
+
+  <footer id="footer" class="footer">
+    <p>Copyright 2026 practice site</p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8047998d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "⚠️ 이메일 발송 완료\n"
+     ]
+    }
+   ],
+   "source": [
+    "import shutil\n",
+    "import smtplib\n",
+    "from email.mime.text import MIMEText\n",
+    "from email.mime.multipart import MIMEMultipart\n",
+    "\n",
+    "# Gmail 계정 정보 (앱 비밀번호 사용!)\n",
+    "SMTP_SERVER = \"smtp.gmail.com\"\n",
+    "SMTP_PORT = 587\n",
+    "SENDER = \"amugona.2606@gmail.com\"\n",
+    "PASSWORD = \"orzk gmnw uhmu bgqp\"\n",
+    "RECIPIENT = \"seorab@naver.com\"\n",
+    "\n",
+    "# 여러명에게 발송할 경우 리스트로 지정\n",
+    "# RECIPIENT = [\"seorab@naver.com\", \"seorab81@gmail.com\"]\n",
+    "\n",
+    "# 1. 디스크 사용량 확인\n",
+    "def check_disk_usage(path=\"/\", threshold=80):\n",
+    "  total, used, free = shutil.disk_usage(path)\n",
+    "  usage = used / total * 100\n",
+    "  return usage, threshold\n",
+    "\n",
+    "# 2. 이메일 발송 함수\n",
+    "def send_email(subject, body):\n",
+    "  msg = MIMEMultipart()\n",
+    "  msg[\"From\"] = SENDER\n",
+    "  msg[\"To\"] = RECIPIENT\n",
+    "\n",
+    "  # 여러명에게 발송할 경우 구분자를 넣어 문자열로 변환\n",
+    "  # msg[\"To\"] = ', '.join(RECIPIENT)\n",
+    "\n",
+    "  msg[\"Subject\"] = subject\n",
+    "  msg.attach(MIMEText(body, \"html\"))\n",
+    "\n",
+    "  with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as s:\n",
+    "    s.starttls()\n",
+    "    s.login(SENDER, PASSWORD)\n",
+    "    s.sendmail(SENDER, RECIPIENT, msg.as_string())\n",
+    "\n",
+    "# 3. 메인 로직\n",
+    "if __name__ == \"__main__\":\n",
+    "  usage, threshold = check_disk_usage(\"/\")\n",
+    "  subject = f\"[경고] 디스크 사용량 {usage:.1f}% 초과\"\n",
+    "  body = f\"\"\"\n",
+    "  <h3>⚠️ 디스크 경고</h3>\n",
+    "  <p>현재 디스크 사용량은 <b>{usage:.1f}%</b> 입니다.<br>\n",
+    "  서버 점검이 필요합니다.</p>\n",
+    "  \"\"\"\n",
+    "  send_email(subject, body)\n",
+    "  print(\"⚠️ 이메일 발송 완료\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv (3.14.6.final.0)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.14.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
