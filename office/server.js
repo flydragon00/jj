@@ -168,6 +168,26 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
+    if (url.pathname === '/avatars.json') {
+      const body = fs.readFileSync(path.join(__dirname, 'avatars.json'));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(body);
+    }
+    // 내 PC에만 두는 캐릭터 이미지 (office/avatars/ 바로 아래 파일만)
+    const av = /^\/avatars\/([\w가-힣 .-]+\.(png|jpe?g|webp|gif))$/i.exec(decodeURIComponent(url.pathname));
+    if (av && !av[1].includes('..')) {
+      let img;
+      try {
+        img = fs.readFileSync(path.join(__dirname, 'avatars', av[1]));
+      } catch (err) {
+        if (err.code === 'ENOENT') return res.writeHead(404).end('not found');
+        throw err;
+      }
+      const ext = av[2].toLowerCase();
+      const type = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+      res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
+      return res.end(img);
+    }
     if (url.pathname === '/send' && req.method === 'POST') return handleSend(req, res);
     res.writeHead(404).end('not found');
   } catch (err) {
