@@ -1823,6 +1823,7 @@
   const tokenMeta = document.querySelector('meta[name="office-token"]');
   const TOKEN = tokenMeta ? tokenMeta.content : null;
   const msgEl = $('msg'), sendBtn = $('sendBtn'), freshBtn = $('freshBtn'), noteEl = $('composerNote');
+  let serverV = null;
   let webBusy = false, sending = false, freshNext = false, noteErr = '';
   const MODE_NOTE = { acceptEdits: '파일 수정은 자동 허용, 그 밖에 허락이 필요한 일은 터미널에서 하세요.', default: '허락이 필요한 일은 터미널에서 하세요.', plan: '계획만 세우는 모드예요.' };
   function setNote(text, isErr) { noteEl.textContent = text; noteEl.classList.toggle('err', !!isErr); }
@@ -1834,8 +1835,9 @@
     freshBtn.disabled = !usable || webBusy || sending;
     freshBtn.setAttribute('aria-pressed', String(freshNext));
     freshBtn.textContent = freshNext ? '새 대화로 보냄 ✓' : '새 대화';
+    if (!TOKEN) return setNote(location.protocol === 'file:' ? '파일로 직접 연 화면이에요. node office/launch.js 로 켠 주소에서 여세요.' : '옛 버전 서버가 켜져 있어서 입력할 수 없어요. 터미널에서 node office/launch.js 를 실행하면 새로 켜져요.', true);
     if (noteErr) return setNote(noteErr, true);
-    if (!usable) return setNote(TOKEN ? '서버에 연결되면 여기서 바로 말을 걸 수 있어요.' : '서버로 연 화면에서만 보낼 수 있어요.', false);
+    if (!usable) return setNote(TOKEN ? '서버에 연결되면 여기서 바로 말을 걸 수 있어요.' : '', false);
     if (webBusy) return setNote('쿠리만쥬가 일하는 중… 끝나면 다음 메시지를 보낼 수 있어요.', false);
     setNote((web && MODE_NOTE[web.mode]) || (web && web.mode ? '권한 모드: ' + web.mode : ''), false);
   }
@@ -1882,6 +1884,12 @@
       catch (e) { warn('/state 응답이 JSON이 아니에요.', e); throw e; }
       setConnected(true);
       // 화면 코드 버그는 연결 실패로 바꾸지 않고 따로 알린다
+      if (typeof json.v === 'string') {
+        let triedReload = false;
+        try { triedReload = sessionStorage.getItem('officeReload') === json.v; sessionStorage.setItem('officeReload', json.v); } catch (e) { triedReload = true; }
+        if ((serverV && serverV !== json.v) || (!TOKEN && !triedReload)) { location.reload(); return; }
+        serverV = json.v;
+      }
       try { state = normalize(json); applyState(state); updateComposer(json.web); }
       catch (e) { console.error('[office] 화면 그리기 실패 (서버 문제 아님):', e); }
     } catch (e) {

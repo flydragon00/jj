@@ -6,6 +6,7 @@ const http = require('http');
 const path = require('path');
 const crypto = require('crypto');
 const chat = require('./chat.js');
+const VERSION = require('./version.js').codeVersion(); // 켜질 때의 코드 지문
 
 const PORT = Number(process.argv[2] || process.env.OFFICE_PORT || 4777);
 const FILES = ['events.old.jsonl', 'events.jsonl'].map((f) => path.join(__dirname, f));
@@ -158,7 +159,7 @@ const server = http.createServer((req, res) => {
   try {
     if (url.pathname === '/state') {
       lastPoll = Date.now();
-      const body = JSON.stringify({ ...buildState(readEvents(), Date.now()), web: chat.status() });
+      const body = JSON.stringify({ ...buildState(readEvents(), Date.now()), web: chat.status(), v: VERSION, pid: process.pid });
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(body);
     }
