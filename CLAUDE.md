@@ -29,3 +29,13 @@
 - 화면 작업: 모몽가
 - 3번 이상 막히면: 외부용병
 - 작업 끝: 후루혼야가 기록
+
+## 2D 사무실
+
+- 무엇: `office/` 폴더. 훅(`office/hook.js`)이 이벤트를 `office/events.jsonl` 에 기록 → `office/server.js`(기본 포트 4777, `node office/server.js`)가 `GET /state` 제공 → `office/index.html` 이 1초마다 폴링해 직원 책상에 불을 켬. 자세한 건 `office/README.md`.
+- 결정: 훅은 Claude 작업을 막지 않도록 항상 exit 0, 실패는 `office/hook-errors.log` 에 남김.
+- 결정: 기록 파일이 512KB 넘으면 훅이 `events.old.jsonl` 로 rename (서버 덮어쓰기는 이벤트 유실 위험이 있어 폐기).
+- 결정: SessionStart 는 `startup|clear` 때만 정리 (compact 중에는 작업 유지).
+- 결정: Esc 중단 시 퇴근 기록이 없으므로 PostToolUse 신호 기준 15분 무신호면 화면에서 내림.
+- 다음: 내 PC 실제 세션에서 하위 에이전트 안 PostToolUse 입력에 `agent_id` 가 들어오는지 확인 (안 들어오면 15분 넘는 작업이 화면에서 사라짐).
+- 보류: 우사기 단순화 제안 (index.html normalize 축소, 시계 보정·중복 타이머 제거).
