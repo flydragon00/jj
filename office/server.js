@@ -67,7 +67,7 @@ function buildState(events, now) {
         } else if (mainBySession.has(e.session)) {
           const m = mainBySession.get(e.session);
           if (e.event === 'tool') m.doing = e.text || null;
-          if (e.event === 'handoff') m.doing = `📨 ${e.to} 에게 일 맡기는 중`;
+          if (e.event === 'handoff') m.doing = '📨 일 맡기고 기다리는 중';
         }
         break;
       case 'stop':
