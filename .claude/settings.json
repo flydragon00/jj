@@ -14,6 +14,7 @@
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "startup|clear",
         "hooks": [
           {
             "type": "command",
@@ -58,6 +59,18 @@
     ],
     "SubagentStop": [
       {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/office/hook.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",

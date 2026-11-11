@@ -307,8 +307,8 @@
   </header>
 
   <div class="banner" id="banner" role="alert">
-    <p><strong>서버 연결 안 됨 — node office/server.js 로 켜세요</strong>
-      터미널에서 <code>node office/server.js</code> 를 실행하면 자동으로 다시 연결됩니다.</p>
+    <p><strong id="bannerTitle">서버 연결 안 됨 — node office/server.js 로 켜세요</strong>
+      <span id="bannerDetail">터미널에서 <code>node office/server.js</code> 를 실행하면 자동으로 다시 연결됩니다.</span></p>
     <button class="btn" id="demoBtn" type="button" aria-pressed="false">데모 보기</button>
   </div>
 
@@ -620,7 +620,19 @@
 
   // ---------- 연결 상태 ----------
   let connected = null;
+  let lastErr = '';
+  const bannerDefault = { title: $('bannerTitle').textContent, detail: $('bannerDetail').innerHTML };
   function setConnected(on, err) {
+    const msg = on ? '' : String((err && err.message) || err || '');
+    if (!on && msg !== lastErr) {
+      // 서버가 켜져 있는데 오류를 돌려준 경우와 아예 안 켜진 경우를 구분해서 보여준다
+      const serverError = err && err.serverError;
+      $('bannerTitle').textContent = serverError ? '서버 오류 — 서버 터미널을 확인하세요' : bannerDefault.title;
+      if (serverError) $('bannerDetail').textContent = msg;
+      else $('bannerDetail').innerHTML = bannerDefault.detail;
+      if (on === connected) console.warn('[office] 연결 실패 원인이 바뀌었어요:', err);
+    }
+    lastErr = msg;
     if (on === connected) return;
     connected = on;
     document.body.classList.toggle('offline', !on);
@@ -637,16 +649,24 @@
       let res;
       try { res = await fetch('/state', { cache: 'no-store', signal: ctrl.signal }); }
       finally { clearTimeout(timer); }
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) {
+        const err = new Error('HTTP ' + res.status + ': ' + (await res.text().catch(() => '')).slice(0, 200));
+        err.serverError = true;
+        throw err;
+      }
       let json;
       try { json = await res.json(); }
       catch (e) { warn('/state 응답이 JSON이 아니에요.', e); throw e; }
       setConnected(true);
-      state = normalize(json);
-      render();
+      // 화면 코드 버그는 연결 실패로 바꾸지 않고 따로 알린다
+      try { state = normalize(json); render(); }
+      catch (e) { console.error('[office] 화면 그리기 실패 (서버 문제 아님):', e); }
     } catch (e) {
       setConnected(false, e);
-      if (!demo) { state = null; render(); }
+      if (!demo) {
+        state = null;
+        try { render(); } catch (re) { console.error('[office] 화면 그리기 실패:', re); }
+      }
     } finally {
       setTimeout(poll, 1000);
     }
