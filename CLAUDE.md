@@ -32,10 +32,12 @@
 
 ## 2D 사무실
 
-- 무엇: `office/` 폴더. 훅(`office/hook.js`)이 이벤트를 `office/events.jsonl` 에 기록 → `office/server.js`(기본 포트 4777, `node office/server.js`)가 `GET /state` 제공 → `office/index.html` 이 1초마다 폴링해 직원 책상에 불을 켬. 자세한 건 `office/README.md`.
+- 무엇: `office/` 폴더. 훅(`office/hook.js`)이 대화·도구 사용·일 맡기기를 `office/events.jsonl` 에 기록 → `office/server.js`(포트 4777)가 `GET /state` 제공 → `office/index.html` 이 1초마다 폴링. 자세한 건 `office/README.md`.
+- 화면(v3): 나무 바닥 오픈 사무실 + 오른쪽 대화창. 직접 그린 SVG 마스코트, 직급 배지, "프로젝트: 하는 일" 말풍선, 질문이 오면 전원이 자리로 뛰어가는 "우다다다". 참고: 인스타 릴스 DfYxnKWxVkH (대표 이미지와 캡션만 확인, 영상은 못 봄).
+- 결정: 원작 캐릭터 그림은 따라 그리지 않고 오리지널 마스코트만 쓴다.
+- 결정: 세션 시작 때 `office/launch.js` 가 서버를 자동으로 켜고 브라우저를 연다. 화면을 30분 안 보면 서버는 스스로 꺼진다.
 - 결정: 훅은 Claude 작업을 막지 않도록 항상 exit 0, 실패는 `office/hook-errors.log` 에 남김.
-- 결정: 기록 파일이 512KB 넘으면 훅이 `events.old.jsonl` 로 rename (서버 덮어쓰기는 이벤트 유실 위험이 있어 폐기).
-- 결정: SessionStart 는 `startup|clear` 때만 정리 (compact 중에는 작업 유지).
-- 결정: Esc 중단 시 퇴근 기록이 없으므로 PostToolUse 신호 기준 15분 무신호면 화면에서 내림.
-- 다음: 내 PC 실제 세션에서 하위 에이전트 안 PostToolUse 입력에 `agent_id` 가 들어오는지 확인 (안 들어오면 15분 넘는 작업이 화면에서 사라짐).
-- 보류: 우사기 단순화 제안 (index.html normalize 축소, 시계 보정·중복 타이머 제거).
+- 결정: 기록 파일이 512KB 넘으면 훅이 `events.old.jsonl` 로 rename. 새로 시작·`/clear` 때만 세션 기록 정리.
+- 결정: Esc 중단 시 퇴근 기록이 없으므로 PreToolUse 신호 기준 15분 무신호면 화면에서 내림.
+- 다음: 내 PC 실제 세션으로 확인(자동 실행, 훅 기록). v2·v3 코드는 코드리뷰어·랏코·우사기 검토를 아직 안 받음.
+- 남은 흠: 360px 에서 두 줄 말풍선이 부서 라벨을 가림, 쉬는 직원 이름표가 가끔 겹침.
