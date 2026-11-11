@@ -11,6 +11,8 @@ const VERSION = require('./version.js').codeVersion(); // 켜질 때의 코드 �
 const PORT = Number(process.argv[2] || process.env.OFFICE_PORT || 4777);
 const FILES = ['events.old.jsonl', 'events.jsonl'].map((f) => path.join(__dirname, f));
 const PAGE = path.join(__dirname, 'index.html');
+const ROOT = path.dirname(__dirname); // 프로젝트 폴더
+const IMG = /\.(png|jpe?g|webp|gif)$/i;
 // 다른 웹사이트가 몰래 메시지를 보내지 못하게, 이 페이지에만 심어 주는 일회용 열쇠
 const TOKEN = crypto.randomBytes(24).toString('hex');
 const MAX_MESSAGE = 8000;
@@ -180,21 +182,29 @@ const server = http.createServer((req, res) => {
       }
       const wanted = path.basename(String(cfg.image || ''));
       if (!found.includes(wanted) && found.length) cfg.image = 'avatars/' + encodeURIComponent(found[0]);
+      // avatars 폴더가 비었으면 프로젝트 폴더(jj) 바로 아래에 둔 이미지도 받아 준다
+      if (!found.length) {
+        const rootImgs = fs.readdirSync(ROOT).filter((f) => IMG.test(f)).sort();
+        if (rootImgs.length) {
+          cfg.image = 'rootimg/' + encodeURIComponent(rootImgs[0]);
+          found = rootImgs;
+        }
+      }
       cfg.found = found.length; // 화면이 "이미지가 없어요" 를 알려줄 수 있게
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify(cfg));
     }
     // 내 PC에만 두는 캐릭터 이미지 (office/avatars/ 바로 아래 파일만)
-    const av = /^\/avatars\/([^/\\]+\.(png|jpe?g|webp|gif))$/i.exec(decodeURIComponent(url.pathname));
-    if (av && !av[1].includes('..')) {
+    const av = /^\/(avatars|rootimg)\/([^/\\]+\.(png|jpe?g|webp|gif))$/i.exec(decodeURIComponent(url.pathname));
+    if (av && !av[2].includes('..')) {
       let img;
       try {
-        img = fs.readFileSync(path.join(__dirname, 'avatars', av[1]));
+        img = fs.readFileSync(path.join(av[1] === 'avatars' ? path.join(__dirname, 'avatars') : ROOT, av[2]));
       } catch (err) {
         if (err.code === 'ENOENT') return res.writeHead(404).end('not found');
         throw err;
       }
-      const ext = av[2].toLowerCase();
+      const ext = av[3].toLowerCase();
       const type = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
       res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
       return res.end(img);
