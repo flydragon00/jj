@@ -532,7 +532,7 @@
       <button class="btn newbtn" id="newBtn" type="button" hidden>새 메시지 ↓</button>
       <form class="composer" id="composer">
         <label class="sr" for="msg">Claude에게 보낼 메시지</label>
-        <textarea id="msg" rows="2" disabled maxlength="8000" placeholder="쿠리만쥬에게 일 시키기… (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
+        <textarea id="msg" rows="2" disabled maxlength="8000" placeholder="오메가몬에게 일 시키기… (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
         <div class="composer-row">
           <span class="composer-note" id="composerNote" role="status"></span>
           <button class="btn ghost" id="freshBtn" type="button" title="이전 대화를 잇지 않고 새로 시작">새 대화</button>
@@ -557,21 +557,21 @@
 
   // ---------- 직원 명부 ----------
   const ROSTER = [
-    { key: '(main)', emoji: '🌰', name: '쿠리만쥬', role: '대표·책사', dept: '전략실', ex: '그냥 말 걸면 돼요. "이번 주 할 일 정리해줘"' },
-    { key: 'orchestrator', emoji: '🐱', name: '하치와레', role: '실장·지휘', dept: '전략실', ex: '하치와레한테 이 기능 팀 꾸려서 진행시켜줘' },
-    { key: 'Explore', emoji: '🔭', name: '탐색가', role: '조사', dept: '개발실', ex: '탐색가한테 로그인 흐름이 어디 있는지 조사해줘' },
-    { key: 'Plan', emoji: '📐', name: '설계자', role: '설계', dept: '개발실', ex: '설계자한테 알림 기능 설계 잡아줘' },
-    { key: 'general-purpose', emoji: '🐹', name: '치이카와', role: '빌더', dept: '개발실', ex: '치이카와한테 설계대로 구현해줘' },
-    { key: 'precise-fixer', emoji: '🦁', name: '시사', role: '정밀수정공', dept: '개발실', ex: '시사한테 이 오타 하나만 고쳐줘' },
-    { key: 'pr-review-toolkit:code-reviewer', emoji: '🧐', name: '코드리뷰어', role: '리뷰', dept: '품질관리', ex: '코드리뷰어한테 방금 바꾼 거 리뷰해줘' },
-    { key: 'pr-review-toolkit:silent-failure-hunter', emoji: '🦦', name: '랏코', role: '에러헌터', dept: '품질관리', ex: '랏코한테 조용히 삼켜진 에러 없는지 찾아줘' },
-    { key: 'pr-review-toolkit:pr-test-analyzer', emoji: '🧪', name: '테스트분석가', role: '테스트', dept: '품질관리', ex: '테스트분석가한테 테스트 빠진 곳 봐줘' },
-    { key: 'pr-review-toolkit:code-simplifier', emoji: '🐰', name: '우사기', role: '단순화공', dept: '품질관리', ex: '우사기한테 이 함수 단순하게 다듬어줘' },
-    { key: 'designer', emoji: '🐿', name: '모몽가', role: '디자이너', dept: '크리에이티브', ex: '모몽가한테 이 화면 모바일에서 다듬어줘' },
-    { key: 'media', emoji: '🎬', name: '미디어팀', role: '미디어', dept: '크리에이티브', ex: '미디어팀한테 소개 이미지 만들어줘' },
-    { key: 'librarian', emoji: '📚', name: '후루혼야', role: '사서', dept: '지식·운영', ex: '후루혼야한테 오늘 작업 기록해줘' },
-    { key: 'ops', emoji: '🛡', name: '갑옷씨', role: '관리인', dept: '지식·운영', ex: '갑옷씨한테 서버 설정 점검해줘' },
-    { key: 'second-opinion', emoji: '🥷', name: '외부용병', role: '교차검증', dept: '지식·운영', ex: '외부용병한테 이 판단 교차검증 받아줘' },
+    { key: '(main)', emoji: '🌰', name: '오메가몬', role: '대표·책사', dept: '전략실', ex: '그냥 말 걸면 돼요. "이번 주 할 일 정리해줘"' },
+    { key: 'orchestrator', emoji: '🐱', name: '워그레이몬', role: '실장·지휘', dept: '전략실', ex: '워그레이몬한테 이 기능 팀 꾸려서 진행시켜줘' },
+    { key: 'Explore', emoji: '🔭', name: '파닥몬', role: '조사', dept: '개발실', ex: '파닥몬한테 로그인 흐름이 어디 있는지 조사해줘' },
+    { key: 'Plan', emoji: '📐', name: '메탈가루몬', role: '설계', dept: '개발실', ex: '메탈가루몬한테 알림 기능 설계 잡아줘' },
+    { key: 'general-purpose', emoji: '🐹', name: '아구몬', role: '빌더', dept: '개발실', ex: '아구몬한테 설계대로 구현해줘' },
+    { key: 'precise-fixer', emoji: '🦁', name: '파피몬', role: '정밀수정공', dept: '개발실', ex: '파피몬한테 이 오타 하나만 고쳐줘' },
+    { key: 'pr-review-toolkit:code-reviewer', emoji: '🧐', name: '레나몬', role: '리뷰', dept: '품질관리', ex: '레나몬한테 방금 바꾼 거 리뷰해줘' },
+    { key: 'pr-review-toolkit:silent-failure-hunter', emoji: '🦦', name: '임프몬', role: '에러헌터', dept: '품질관리', ex: '임프몬한테 조용히 삼켜진 에러 없는지 찾아줘' },
+    { key: 'pr-review-toolkit:pr-test-analyzer', emoji: '🧪', name: '텐타몬', role: '테스트', dept: '품질관리', ex: '텐타몬한테 테스트 빠진 곳 봐줘' },
+    { key: 'pr-review-toolkit:code-simplifier', emoji: '🐰', name: '테리어몬', role: '단순화공', dept: '품질관리', ex: '테리어몬한테 이 함수 단순하게 다듬어줘' },
+    { key: 'designer', emoji: '🐿', name: '가트몬', role: '디자이너', dept: '크리에이티브', ex: '가트몬한테 이 화면 모바일에서 다듬어줘' },
+    { key: 'media', emoji: '🎬', name: '팔몬', role: '미디어', dept: '크리에이티브', ex: '팔몬한테 소개 이미지 만들어줘' },
+    { key: 'librarian', emoji: '📚', name: '쉬라몬', role: '사서', dept: '지식·운영', ex: '쉬라몬한테 오늘 작업 기록해줘' },
+    { key: 'ops', emoji: '🛡', name: '길몬', role: '관리인', dept: '지식·운영', ex: '길몬한테 서버 설정 점검해줘' },
+    { key: 'second-opinion', emoji: '🥷', name: '브이몬', role: '교차검증', dept: '지식·운영', ex: '브이몬한테 이 판단 교차검증 받아줘' },
   ];
   const MAIN_KEY = '(main)';
   const ACCENT = { '전략실': '--d-strategy', '개발실': '--d-dev', '품질관리': '--d-qa', '크리에이티브': '--d-creative', '지식·운영': '--d-ops', '라운지': '--d-lounge', '손님석': '--d-guest' };
@@ -1687,7 +1687,7 @@
       case 'main_stop':
         // 서버가 마지막 답변을 main_stop 에 담아 보낼 때: 같은 답변이 이미 있으면 줄만 표시
         if (text && text !== lastAssistantText) { lastAssistantText = text; return botMsg(e, text); }
-        return shift(e, '🌰 쿠리만쥬 한숨 돌림');
+        return shift(e, '🌰 오메가몬 한숨 돌림');
       case 'assistant':
         if (!text) return null;
         lastAssistantText = text;
@@ -1710,7 +1710,7 @@
         if (text) n.append(folded('결과 보기', text));
         return n;
       }
-      case 'main_start': return shift(e, '🌰 쿠리만쥬 작업 시작');
+      case 'main_start': return shift(e, '🌰 오메가몬 작업 시작');
       case 'session': { const n = el('div', 'divider', '새 세션'); n.setAttribute('role', 'separator'); return n; }
       case 'beat': return null;
       default:
@@ -1722,7 +1722,7 @@
     const n = el('div', 'msg bot'); n.dataset.kind = 'talk';
     const av = el('span', 'av emoji', '🌰'); av.setAttribute('aria-hidden', 'true');
     const head = el('div', 'who');
-    head.append(document.createTextNode('쿠리만쥬 '), timeEl(e.t));
+    head.append(document.createTextNode('오메가몬 '), timeEl(e.t));
     const body = el('div');
     body.append(longText('', text));
     n.append(av, head, body);
@@ -1891,7 +1891,7 @@
     if (!TOKEN) return setNote(location.protocol === 'file:' ? '파일로 직접 연 화면이에요. node office/launch.js 로 켠 주소에서 여세요.' : '옛 버전 서버가 켜져 있어서 입력할 수 없어요. 터미널에서 node office/launch.js 를 실행하면 새로 켜져요.', true);
     if (noteErr) return setNote(noteErr, true);
     if (!usable) return setNote(TOKEN ? '서버에 연결되면 여기서 바로 말을 걸 수 있어요.' : '', false);
-    if (webBusy) return setNote('쿠리만쥬가 일하는 중… 끝나면 다음 메시지를 보낼 수 있어요.', false);
+    if (webBusy) return setNote('오메가몬가 일하는 중… 끝나면 다음 메시지를 보낼 수 있어요.', false);
     setNote((web && MODE_NOTE[web.mode]) || (web && web.mode ? '권한 모드: ' + web.mode : ''), false);
   }
   async function sendMessage() {
@@ -1964,7 +1964,7 @@
     ['user', null, '사무실 페이지에 대화창도 붙여줄래? 터미널이랑 따로 보기 불편해.'],
     ['main_start'],
     ['tool', null, '📖 office/index.html 읽는 중'],
-    ['assistant', null, '좋아요. 지금 구조부터 살펴볼게요.\n탐색가한테 이벤트 흐름 조사를 맡기고, 설계자랑 화면을 잡을게요.'],
+    ['assistant', null, '좋아요. 지금 구조부터 살펴볼게요.\n파닥몬한테 이벤트 흐름 조사를 맡기고, 메탈가루몬랑 화면을 잡을게요.'],
     ['handoff', null, 'Explore', '이벤트가 어디서 들어오는지 조사'],
     ['start', 'Explore'],
     ['tool', 'Explore', "🔍 'recent' 찾는 중"],

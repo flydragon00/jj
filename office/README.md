@@ -26,7 +26,7 @@ node office/launch.js
 ## 화면에 나오는 것
 
 - **사무실**: 쉬는 직원은 라운지를 어슬렁거리고, 일을 받으면 자기 책상으로 걸어가요. 머리 위 말풍선에 지금 하는 일("📖 server.js 읽는 중")이 떠요. 일을 맡기면 서류가 날아가고, 끝나면 결과 서류를 돌려줘요.
-- **대화창**: 내 질문, 쿠리만쥬(Claude) 답변, 도구 사용, 일 맡기기, 출근·퇴근 기록. 위쪽 칩으로 "대화만" 볼 수도 있어요.
+- **대화창**: 내 질문, 오메가몬(Claude) 답변, 도구 사용, 일 맡기기, 출근·퇴근 기록. 위쪽 칩으로 "대화만" 볼 수도 있어요.
 
 ## 화면에서 바로 대화하기
 
@@ -82,20 +82,20 @@ Claude Code 훅 ──▶ office/hook.js ──▶ office/events.jsonl ──▶
 
 | 별명 | 에이전트 |
 |---|---|
-| 🌰 쿠리만쥬 | 메인 대화 |
-| 🐱 하치와레 | orchestrator |
-| 🔭 탐색가 | Explore |
-| 📐 설계자 | Plan |
-| 🐹 치이카와 | general-purpose |
-| 🦁 시사 | precise-fixer |
-| 🧐 코드리뷰어 | pr-review-toolkit:code-reviewer |
-| 🦦 랏코 | pr-review-toolkit:silent-failure-hunter |
-| 🧪 테스트분석가 | pr-review-toolkit:pr-test-analyzer |
-| 🐰 우사기 | pr-review-toolkit:code-simplifier |
-| 🐿 모몽가 | designer |
-| 🎬 미디어팀 | media |
-| 📚 후루혼야 | librarian |
-| 🛡 갑옷씨 | ops |
-| 🥷 외부용병 | second-opinion |
+| 🌰 오메가몬 | 메인 대화 |
+| 🐱 워그레이몬 | orchestrator |
+| 🔭 파닥몬 | Explore |
+| 📐 메탈가루몬 | Plan |
+| 🐹 아구몬 | general-purpose |
+| 🦁 파피몬 | precise-fixer |
+| 🧐 레나몬 | pr-review-toolkit:code-reviewer |
+| 🦦 임프몬 | pr-review-toolkit:silent-failure-hunter |
+| 🧪 텐타몬 | pr-review-toolkit:pr-test-analyzer |
+| 🐰 테리어몬 | pr-review-toolkit:code-simplifier |
+| 🐿 가트몬 | designer |
+| 🎬 팔몬 | media |
+| 📚 쉬라몬 | librarian |
+| 🛡 길몬 | ops |
+| 🥷 브이몬 | second-opinion |
 
 목록에 없는 에이전트는 "손님석"에 이름 그대로 앉아요.

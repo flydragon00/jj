@@ -6,29 +6,29 @@
 
 | 부서 | 별명 | 역할 | 에이전트 |
 |---|---|---|---|
-| 전략실 | 🌰 쿠리만쥬 | 대표·책사 | 메인 대화 (Claude 본인) |
-| 전략실 | 🐱 하치와레 | 실장·지휘 | orchestrator |
-| 개발실 | 🔭 탐색가 | 조사 | Explore |
-| 개발실 | 📐 설계자 | 설계 | Plan |
-| 개발실 | 🐹 치이카와 | 빌더 | general-purpose |
-| 개발실 | 🦁 시사 | 정밀수정공 | precise-fixer |
-| 품질관리 | 🧐 코드리뷰어 | 리뷰 | pr-review-toolkit:code-reviewer |
-| 품질관리 | 🦦 랏코 | 에러헌터 | pr-review-toolkit:silent-failure-hunter |
-| 품질관리 | 🧪 테스트분석가 | 테스트 | pr-review-toolkit:pr-test-analyzer |
-| 품질관리 | 🐰 우사기 | 단순화공 | pr-review-toolkit:code-simplifier |
-| 크리에이티브 | 🐿 모몽가 | 디자이너 | designer (frontend-design 스킬 활용) |
-| 크리에이티브 | 🎬 미디어팀 | 미디어 | media |
-| 지식·운영 | 📚 후루혼야 | 사서 | librarian |
-| 지식·운영 | 🛡 갑옷씨 | 관리인 | ops |
-| 지식·운영 | 🥷 외부용병 | 교차검증 | second-opinion |
+| 전략실 | 🌰 오메가몬 | 대표·책사 | 메인 대화 (Claude 본인) |
+| 전략실 | 🐱 워그레이몬 | 실장·지휘 | orchestrator |
+| 개발실 | 🔭 파닥몬 | 조사 | Explore |
+| 개발실 | 📐 메탈가루몬 | 설계 | Plan |
+| 개발실 | 🐹 아구몬 | 빌더 | general-purpose |
+| 개발실 | 🦁 파피몬 | 정밀수정공 | precise-fixer |
+| 품질관리 | 🧐 레나몬 | 리뷰 | pr-review-toolkit:code-reviewer |
+| 품질관리 | 🦦 임프몬 | 에러헌터 | pr-review-toolkit:silent-failure-hunter |
+| 품질관리 | 🧪 텐타몬 | 테스트 | pr-review-toolkit:pr-test-analyzer |
+| 품질관리 | 🐰 테리어몬 | 단순화공 | pr-review-toolkit:code-simplifier |
+| 크리에이티브 | 🐿 가트몬 | 디자이너 | designer (frontend-design 스킬 활용) |
+| 크리에이티브 | 🎬 팔몬 | 미디어 | media |
+| 지식·운영 | 📚 쉬라몬 | 사서 | librarian |
+| 지식·운영 | 🛡 길몬 | 관리인 | ops |
+| 지식·운영 | 🥷 브이몬 | 교차검증 | second-opinion |
 
 ### 호출 규칙
 
-- 새 기능: 설계자 → 치이카와 → 코드리뷰어·랏코·우사기 순서
-- 작은 수정: 시사
-- 화면 작업: 모몽가
-- 3번 이상 막히면: 외부용병
-- 작업 끝: 후루혼야가 기록
+- 새 기능: 메탈가루몬 → 아구몬 → 레나몬·임프몬·테리어몬 순서
+- 작은 수정: 파피몬
+- 화면 작업: 가트몬
+- 3번 이상 막히면: 브이몬
+- 작업 끝: 쉬라몬가 기록
 
 ## 2D 사무실
 
@@ -41,5 +41,5 @@
 - 결정: 훅은 Claude 작업을 막지 않도록 항상 exit 0, 실패는 `office/hook-errors.log` 에 남김.
 - 결정: 기록 파일이 512KB 넘으면 훅이 `events.old.jsonl` 로 rename. 새로 시작·`/clear` 때만 세션 기록 정리.
 - 결정: Esc 중단 시 퇴근 기록이 없으므로 PreToolUse 신호 기준 15분 무신호면 화면에서 내림.
-- 다음: 내 PC 실제 세션으로 확인(자동 실행, 훅 기록). v2·v3 코드는 코드리뷰어·랏코·우사기 검토를 아직 안 받음.
+- 다음: 내 PC 실제 세션으로 확인(자동 실행, 훅 기록). v2·v3 코드는 레나몬·임프몬·테리어몬 검토를 아직 안 받음.
 - 남은 흠: 360px 에서 두 줄 말풍선이 부서 라벨을 가림, 쉬는 직원 이름표가 가끔 겹침.
