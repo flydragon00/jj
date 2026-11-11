@@ -43,46 +43,82 @@ function readEvents() {
 
 function buildState(events, now) {
   const active = new Map();
-  const mainBySession = new Map();
+  const mainBySession = new Map(); // session -> { since, doing }
   for (const e of events) {
-    if (e.event === 'start' && e.id) {
-      active.set(e.id, { id: e.id, type: e.type || '?', since: e.t, seen: e.t, session: e.session });
-    } else if (e.event === 'beat' && e.id) {
-      // 시작 기록이 오래돼 정리됐어도, 신호가 오면 다시 자리에 앉힌다
-      const a = active.get(e.id);
-      if (a) a.seen = e.t;
-      else if (e.type) active.set(e.id, { id: e.id, type: e.type, since: e.t, seen: e.t, session: e.session });
-    } else if (e.event === 'stop' && e.id) {
-      active.delete(e.id);
-    } else if (e.event === 'main_start') {
-      mainBySession.set(e.session, e.t);
-    } else if (e.event === 'main_stop') {
-      mainBySession.delete(e.session);
-    } else if (e.event === 'session' && (e.source === 'startup' || e.source === 'clear')) {
-      // 새로 시작하거나 /clear 했을 때만 그 세션의 남은 기록을 정리 (compact·resume 은 일하는 중일 수 있음)
-      mainBySession.delete(e.session);
-      for (const [id, a] of active) if (a.session === e.session) active.delete(id);
+    const agent = e.id ? active.get(e.id) : null;
+    switch (e.event) {
+      case 'start':
+        if (e.id) active.set(e.id, { id: e.id, type: e.type || '?', since: e.t, seen: e.t, doing: null, session: e.session });
+        break;
+      case 'tool':
+      case 'handoff':
+      case 'beat':
+        if (e.id) {
+          // 시작 기록이 정리됐어도 도구를 쓰고 있으면 다시 자리에 앉힌다
+          let a = agent;
+          if (!a && e.type) {
+            a = { id: e.id, type: e.type, since: e.t, seen: e.t, doing: null, session: e.session };
+            active.set(e.id, a);
+          }
+          if (a) {
+            a.seen = e.t;
+            if (e.event === 'tool') a.doing = e.text || null;
+          }
+        } else if (mainBySession.has(e.session)) {
+          const m = mainBySession.get(e.session);
+          if (e.event === 'tool') m.doing = e.text || null;
+          if (e.event === 'handoff') m.doing = `📨 ${e.to} 에게 일 맡기는 중`;
+        }
+        break;
+      case 'stop':
+        if (e.id) active.delete(e.id);
+        break;
+      case 'user':
+      case 'main_start':
+        mainBySession.set(e.session, { since: e.t, doing: null });
+        break;
+      case 'main_stop':
+        mainBySession.delete(e.session);
+        break;
+      case 'session':
+        // 새로 시작하거나 /clear 했을 때만 그 세션의 남은 기록을 정리 (compact·resume 은 일하는 중일 수 있음)
+        if (e.source === 'startup' || e.source === 'clear') {
+          mainBySession.delete(e.session);
+          for (const [id, a] of active) if (a.session === e.session) active.delete(id);
+        }
+        break;
     }
   }
-  const mainSince = [...mainBySession.values()].filter((t) => now - t < MAIN_STALE_MS);
+  const mains = [...mainBySession.values()].filter((m) => now - m.since < MAIN_STALE_MS).sort((a, b) => a.since - b.since);
   return {
     now,
-    main: { busy: mainSince.length > 0, since: mainSince.length ? Math.min(...mainSince) : null },
+    main: { busy: mains.length > 0, since: mains.length ? mains[0].since : null, doing: mains.length ? mains[mains.length - 1].doing : null },
     active: [...active.values()]
       .filter((a) => now - a.seen < AGENT_STALE_MS)
-      .map(({ id, type, since }) => ({ id, type, since })),
+      .map(({ id, type, since, doing }) => ({ id, type, since, doing })),
     recent: events
-      .filter((e) => e.event !== 'beat')
-      .slice(-20)
-      .reverse()
-      .map(({ t, event, type, id }) => ({ t, event, type, id })),
+      .map((e, i) => ({ e, i }))
+      .filter(({ e }) => e.event !== 'beat' && e.event !== 'main_start')
+      // 대화창에는 새로 시작·/clear 만 구분선으로 보여준다
+      .filter(({ e }) => e.event !== 'session' || e.source === 'startup' || e.source === 'clear')
+      .slice(-80)
+      .map(({ e, i }) => {
+        const out = { k: `${e.t}-${i}`, t: e.t, event: e.event === 'main_stop' && e.text ? 'assistant' : e.event };
+        for (const f of ['id', 'type', 'to', 'text']) if (e[f] != null) out[f] = e[f];
+        return out;
+      }),
   };
 }
+
+// 화면이 30분 동안 한 번도 묻지 않으면 (탭을 닫았으면) 스스로 꺼진다. 다음 세션 시작 때 다시 켜진다.
+const IDLE_EXIT_MS = 30 * 60 * 1000;
+let lastPoll = Date.now();
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   try {
     if (url.pathname === '/state') {
+      lastPoll = Date.now();
       const body = JSON.stringify(buildState(readEvents(), Date.now()));
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(body);
@@ -108,6 +144,12 @@ if (require.main === module) {
   server.listen(PORT, '127.0.0.1', () => {
     console.log(`🏢 AI 팀 사무실: http://localhost:${PORT}`);
   });
+  setInterval(() => {
+    if (Date.now() - lastPoll > IDLE_EXIT_MS) {
+      console.log('[office] 30분 동안 화면이 열려 있지 않아 서버를 끕니다.');
+      process.exit(0);
+    }
+  }, 60 * 1000).unref();
 }
 
 module.exports = { buildState };
