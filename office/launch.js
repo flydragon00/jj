@@ -102,7 +102,25 @@ async function ensureServer() {
   throw new Error(`서버가 2초 안에 켜지지 않았어요. ${LOG} 를 확인하세요.`);
 }
 
-if (require.main === module) {
+// 켜져 있는 사무실 서버를 끈다: node office/launch.js --stop
+async function stopServer() {
+  const state = await probe();
+  if (state === 'free') return 'not-running';
+  if (state === 'other') throw new Error(`포트 ${PORT} 은 사무실 서버가 아닌 다른 프로그램이 쓰고 있어서 끄지 않았어요.`);
+  let pid = state.stale ? state.pid : null;
+  if (!pid) pid = pidOnPort();
+  await stopStale(pid);
+  return 'stopped';
+}
+
+if (require.main === module && process.argv.includes('--stop')) {
+  stopServer()
+    .then((r) => console.log(r === 'stopped' ? '사무실 서버를 껐어요.' : '사무실 서버가 켜져 있지 않아요.'))
+    .catch((err) => {
+      console.error(`[office] ${err.message}`);
+      process.exit(1);
+    });
+} else if (require.main === module) {
   ensureServer()
     .then((r) => console.log({ running: '이미 켜져 있어요', started: '켰어요', restarted: '옛 버전 서버를 끄고 새로 켰어요' }[r] + `: ${URL_}`))
     .catch((err) => {

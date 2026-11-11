@@ -21,6 +21,12 @@ claude
 node office/launch.js
 ```
 
+끄고 싶을 때:
+
+```bash
+node office/launch.js --stop
+```
+
 포트를 바꾸려면 환경변수 `OFFICE_PORT=5000`, 브라우저 자동 열기를 끄려면 `OFFICE_NO_OPEN=1` 을 쓰세요.
 
 ## 화면에 나오는 것
