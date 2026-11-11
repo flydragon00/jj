@@ -169,12 +169,23 @@ const server = http.createServer((req, res) => {
       return res.end(html);
     }
     if (url.pathname === '/avatars.json') {
-      const body = fs.readFileSync(path.join(__dirname, 'avatars.json'));
+      const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'avatars.json'), 'utf8'));
+      // 정해 둔 이름(sheet.png)이 없으면 avatars 폴더의 첫 이미지를 쓴다 (다른 이름으로 저장해도 되게)
+      const dir = path.join(__dirname, 'avatars');
+      let found = [];
+      try {
+        found = fs.readdirSync(dir).filter((f) => /\.(png|jpe?g|webp|gif)$/i.test(f)).sort();
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+      }
+      const wanted = path.basename(String(cfg.image || ''));
+      if (!found.includes(wanted) && found.length) cfg.image = 'avatars/' + encodeURIComponent(found[0]);
+      cfg.found = found.length; // 화면이 "이미지가 없어요" 를 알려줄 수 있게
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-      return res.end(body);
+      return res.end(JSON.stringify(cfg));
     }
     // 내 PC에만 두는 캐릭터 이미지 (office/avatars/ 바로 아래 파일만)
-    const av = /^\/avatars\/([\w가-힣 .-]+\.(png|jpe?g|webp|gif))$/i.exec(decodeURIComponent(url.pathname));
+    const av = /^\/avatars\/([^/\\]+\.(png|jpe?g|webp|gif))$/i.exec(decodeURIComponent(url.pathname));
     if (av && !av[1].includes('..')) {
       let img;
       try {
