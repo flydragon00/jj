@@ -51,6 +51,7 @@ function describeTool(name, input = {}) {
 
 function toLine(input) {
   const base = { t: Date.now(), session: input.session_id };
+  if (typeof input.cwd === 'string' && input.cwd) base.project = path.basename(input.cwd);
   if (input.agent_id) base.id = input.agent_id;
   if (input.agent_type) base.type = input.agent_type;
   switch (input.hook_event_name) {

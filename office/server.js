@@ -90,8 +90,10 @@ function buildState(events, now) {
     }
   }
   const mains = [...mainBySession.values()].filter((m) => now - m.since < MAIN_STALE_MS).sort((a, b) => a.since - b.since);
+  const lastProject = [...events].reverse().find((e) => typeof e.project === 'string');
   return {
     now,
+    project: lastProject ? lastProject.project : null,
     main: { busy: mains.length > 0, since: mains.length ? mains[0].since : null, doing: mains.length ? mains[mains.length - 1].doing : null },
     active: [...active.values()]
       .filter((a) => now - a.seen < AGENT_STALE_MS)
