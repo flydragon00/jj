@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hello</title>
+  <style>
+    :root {
+      --bg: #fdf6ec;
+      --fg: #3a3a3a;
+      --muted: #6b6b6b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1f2330;
+        --fg: #f2f2f2;
+        --muted: #b5b9c6;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 10vw, 3.5rem);
+    }
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 4vw, 1.25rem);
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Hello! 👋</h1>
+    <p>만나서 반가워요. 오늘도 좋은 하루 보내세요!</p>
+  </main>
+</body>
+</html>
