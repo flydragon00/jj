@@ -36,6 +36,7 @@
 - 화면(v3): 나무 바닥 오픈 사무실 + 오른쪽 대화창. 직접 그린 SVG 마스코트, 직급 배지, "프로젝트: 하는 일" 말풍선, 질문이 오면 전원이 자리로 뛰어가는 "우다다다". 참고: 인스타 릴스 DfYxnKWxVkH (대표 이미지와 캡션만 확인, 영상은 못 봄).
 - 결정: 원작 캐릭터 그림은 따라 그리지 않고 오리지널 마스코트만 쓴다.
 - 결정: 세션 시작 때 `office/launch.js` 가 서버를 자동으로 켜고 브라우저를 연다. 화면을 30분 안 보면 서버는 스스로 꺼진다.
+- 화면에서 대화: 입력창 → `POST /send` → `office/chat.js` 가 `claude -p --resume` 실행(권한 모드 기본 `acceptEdits`, 페이지 토큰·Origin 확인). 가짜 claude 로만 시험했고 실제 claude 실행은 내 PC에서 확인 필요.
 - 결정: 훅은 Claude 작업을 막지 않도록 항상 exit 0, 실패는 `office/hook-errors.log` 에 남김.
 - 결정: 기록 파일이 512KB 넘으면 훅이 `events.old.jsonl` 로 rename. 새로 시작·`/clear` 때만 세션 기록 정리.
 - 결정: Esc 중단 시 퇴근 기록이 없으므로 PreToolUse 신호 기준 15분 무신호면 화면에서 내림.

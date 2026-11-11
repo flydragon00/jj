@@ -472,6 +472,17 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
+  /* ---------- 메시지 입력 ---------- */
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .composer { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border-top: 2px solid var(--wall); }
+  .composer textarea { width: 100%; resize: vertical; min-height: 44px; max-height: 40vh; padding: 8px 10px; font: inherit; font-size: 1rem; color: inherit; background: transparent; border: 2px solid var(--wall); border-radius: 10px; }
+  .composer textarea:disabled { opacity: .6; }
+  .composer-row { display: flex; align-items: center; gap: 8px; }
+  .composer-note { flex: 1; min-width: 0; font-size: .8rem; }
+  .composer-note.err { color: #b3261e; font-weight: 700; }
+  @media (prefers-color-scheme: dark) { .composer-note.err { color: #ffb4ab; } }
+  .composer .btn.ghost { background: transparent; color: inherit; border: 2px solid var(--wall); }
+  .composer .btn:disabled { opacity: .5; cursor: not-allowed; }
 </style>
 </head>
 <body class="offline">
@@ -515,9 +526,18 @@
         </div>
       </div>
       <div class="feed" id="feed" role="log" aria-live="polite" aria-label="대화 기록" tabindex="0">
-        <p class="empty" id="feedEmpty">아직 대화가 없어요. 터미널에서 Claude에게 말을 걸면 여기에 바로 보여요.</p>
+        <p class="empty" id="feedEmpty">아직 대화가 없어요. 아래 입력창이나 터미널에서 Claude에게 말을 걸면 여기에 바로 보여요.</p>
       </div>
       <button class="btn newbtn" id="newBtn" type="button" hidden>새 메시지 ↓</button>
+      <form class="composer" id="composer">
+        <label class="sr" for="msg">Claude에게 보낼 메시지</label>
+        <textarea id="msg" rows="2" disabled maxlength="8000" placeholder="쿠리만쥬에게 일 시키기… (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
+        <div class="composer-row">
+          <span class="composer-note" id="composerNote" role="status"></span>
+          <button class="btn ghost" id="freshBtn" type="button" title="이전 대화를 잇지 않고 새로 시작">새 대화</button>
+          <button class="btn" id="sendBtn" type="submit" disabled>보내기</button>
+        </div>
+      </form>
     </section>
   </div>
 
@@ -1799,6 +1819,52 @@
     clearChat();
   }
 
+  // ---------- 메시지 보내기 ----------
+  const tokenMeta = document.querySelector('meta[name="office-token"]');
+  const TOKEN = tokenMeta ? tokenMeta.content : null;
+  const msgEl = $('msg'), sendBtn = $('sendBtn'), freshBtn = $('freshBtn'), noteEl = $('composerNote');
+  let webBusy = false, sending = false, freshNext = false, noteErr = '';
+  const MODE_NOTE = { acceptEdits: '파일 수정은 자동 허용, 그 밖에 허락이 필요한 일은 터미널에서 하세요.', default: '허락이 필요한 일은 터미널에서 하세요.', plan: '계획만 세우는 모드예요.' };
+  function setNote(text, isErr) { noteEl.textContent = text; noteEl.classList.toggle('err', !!isErr); }
+  function updateComposer(web) {
+    const usable = !!TOKEN && connected === true && !demo;
+    webBusy = !!(web && web.busy);
+    msgEl.disabled = !usable;
+    sendBtn.disabled = !usable || webBusy || sending;
+    freshBtn.disabled = !usable || webBusy || sending;
+    freshBtn.setAttribute('aria-pressed', String(freshNext));
+    freshBtn.textContent = freshNext ? '새 대화로 보냄 ✓' : '새 대화';
+    if (noteErr) return setNote(noteErr, true);
+    if (!usable) return setNote(TOKEN ? '서버에 연결되면 여기서 바로 말을 걸 수 있어요.' : '서버로 연 화면에서만 보낼 수 있어요.', false);
+    if (webBusy) return setNote('쿠리만쥬가 일하는 중… 끝나면 다음 메시지를 보낼 수 있어요.', false);
+    setNote((web && MODE_NOTE[web.mode]) || (web && web.mode ? '권한 모드: ' + web.mode : ''), false);
+  }
+  async function sendMessage() {
+    const text = msgEl.value.trim();
+    if (!text || sending || webBusy || !TOKEN) return;
+    sending = true; noteErr = ''; updateComposer({ busy: true });
+    try {
+      const res = await fetch('/send', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Office-Token': TOKEN }, body: JSON.stringify({ text, fresh: freshNext }) });
+      if (!res.ok) {
+        let why = 'HTTP ' + res.status;
+        try { why = (await res.json()).error || why; } catch (e) { /* 본문이 JSON이 아니면 상태 코드만 보여준다 */ }
+        throw new Error(why);
+      }
+      msgEl.value = ''; freshNext = false;
+    } catch (e) {
+      console.error('[office] 메시지 전송 실패:', e);
+      noteErr = '전송 실패: ' + (e.message || e);
+    } finally {
+      sending = false; updateComposer({ busy: webBusy });
+    }
+  }
+  $('composer').addEventListener('submit', e => { e.preventDefault(); sendMessage(); });
+  msgEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMessage(); }
+  });
+  msgEl.addEventListener('input', () => { if (noteErr) { noteErr = ''; updateComposer({ busy: webBusy }); } });
+  freshBtn.addEventListener('click', () => { freshNext = !freshNext; updateComposer({ busy: webBusy }); });
+
   async function poll() {
     try {
       const ctrl = new AbortController();
@@ -1816,10 +1882,11 @@
       catch (e) { warn('/state 응답이 JSON이 아니에요.', e); throw e; }
       setConnected(true);
       // 화면 코드 버그는 연결 실패로 바꾸지 않고 따로 알린다
-      try { state = normalize(json); applyState(state); }
+      try { state = normalize(json); applyState(state); updateComposer(json.web); }
       catch (e) { console.error('[office] 화면 그리기 실패 (서버 문제 아님):', e); }
     } catch (e) {
       setConnected(false, e);
+      updateComposer(null);
       if (!demo && state) {
         state = null;
         try { reconcile(EMPTY, false); } catch (re) { console.error('[office] 화면 그리기 실패:', re); }

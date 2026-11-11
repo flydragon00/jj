@@ -4,10 +4,15 @@
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
+const crypto = require('crypto');
+const chat = require('./chat.js');
 
 const PORT = Number(process.argv[2] || process.env.OFFICE_PORT || 4777);
 const FILES = ['events.old.jsonl', 'events.jsonl'].map((f) => path.join(__dirname, f));
 const PAGE = path.join(__dirname, 'index.html');
+// 다른 웹사이트가 몰래 메시지를 보내지 못하게, 이 페이지에만 심어 주는 일회용 열쇠
+const TOKEN = crypto.randomBytes(24).toString('hex');
+const MAX_MESSAGE = 8000;
 // 하위 에이전트는 도구를 쓸 때마다 신호(beat)를 남긴다. 이 시간 동안 아무 신호가 없으면
 // Esc 로 중단돼 끝 기록을 못 남긴 것으로 보고 화면에서 내린다.
 const AGENT_STALE_MS = 15 * 60 * 1000;
@@ -112,6 +117,38 @@ function buildState(events, now) {
   };
 }
 
+function reply(res, code, obj) {
+  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' }).end(JSON.stringify(obj));
+}
+
+function handleSend(req, res) {
+  const origin = req.headers.origin;
+  const host = req.headers.host;
+  if (req.headers['x-office-token'] !== TOKEN || (origin && origin !== `http://${host}`)) {
+    return reply(res, 403, { error: '이 페이지에서 보낸 요청이 아니에요. 화면을 새로고침한 뒤 다시 보내세요.' });
+  }
+  let raw = '';
+  req.setEncoding('utf8');
+  req.on('data', (c) => {
+    raw += c;
+    if (raw.length > MAX_MESSAGE * 4) req.destroy();
+  });
+  req.on('end', () => {
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return reply(res, 400, { error: '요청 형식이 잘못됐어요.' });
+    }
+    const text = typeof body.text === 'string' ? body.text.trim() : '';
+    if (!text) return reply(res, 400, { error: '빈 메시지는 보낼 수 없어요.' });
+    if (text.length > MAX_MESSAGE) return reply(res, 400, { error: `메시지가 너무 길어요 (최대 ${MAX_MESSAGE}자).` });
+    const r = chat.send(text, { fresh: body.fresh === true });
+    if (!r.ok) return reply(res, r.code, { error: r.error });
+    reply(res, 202, { ok: true });
+  });
+}
+
 // 화면이 30분 동안 한 번도 묻지 않으면 (탭을 닫았으면) 스스로 꺼진다. 다음 세션 시작 때 다시 켜진다.
 const IDLE_EXIT_MS = 30 * 60 * 1000;
 let lastPoll = Date.now();
@@ -121,15 +158,16 @@ const server = http.createServer((req, res) => {
   try {
     if (url.pathname === '/state') {
       lastPoll = Date.now();
-      const body = JSON.stringify(buildState(readEvents(), Date.now()));
+      const body = JSON.stringify({ ...buildState(readEvents(), Date.now()), web: chat.status() });
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(body);
     }
     if (url.pathname === '/' || url.pathname === '/index.html') {
-      const html = fs.readFileSync(PAGE);
+      const html = fs.readFileSync(PAGE, 'utf8').replace('</head>', `<meta name="office-token" content="${TOKEN}"></head>`);
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
+    if (url.pathname === '/send' && req.method === 'POST') return handleSend(req, res);
     res.writeHead(404).end('not found');
   } catch (err) {
     console.error(`[office] 요청 처리 실패 ${url.pathname}:`, err);
@@ -147,7 +185,7 @@ if (require.main === module) {
     console.log(`🏢 AI 팀 사무실: http://localhost:${PORT}`);
   });
   setInterval(() => {
-    if (Date.now() - lastPoll > IDLE_EXIT_MS) {
+    if (!chat.status().busy && Date.now() - lastPoll > IDLE_EXIT_MS) {
       console.log('[office] 30분 동안 화면이 열려 있지 않아 서버를 끕니다.');
       process.exit(0);
     }
