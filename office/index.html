@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 팀 사무실</title>
+<style>
+  /* ---------- 토큰 ---------- */
+  :root {
+    --page: #d9e4e1;          /* 창밖 하늘빛 종이 */
+    --ink: #1d2733;
+    --ink-soft: #45515e;
+    --wall: #33415a;
+    --wall-ink: #ffffff;
+    --floor-a: #eef2e8;
+    --floor-b: #e2e9dc;
+    --desk: #c08a55;
+    --desk-edge: #855630;
+    --monitor: #283240;
+    --screen-off: #556274;
+    --screen-on: #a8ecff;
+    --lamp-off: #8f9aa8;
+    --lamp: #ffd25a;
+    --glow: rgba(255, 206, 92, .55);
+    --chair: #9aa7b6;
+    --plate: #fffdf6;
+    --plate-edge: #c9c1a8;
+    --bubble: #ffffff;
+    --bubble-edge: #33415a;
+    --panel: #f6f8f4;
+    --ok: #17773f;
+    --bad: #b42318;
+    --banner-bg: #ffe1d9;
+    --banner-ink: #5c1208;
+    --focus: #1f5fd6;
+    --d-strategy: #8a6ad6;
+    --d-dev: #3c8acb;
+    --d-qa: #2f9a70;
+    --d-creative: #dd8536;
+    --d-ops: #c25478;
+    --d-guest: #8b95a4;
+    --font: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    --emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #121821;
+      --ink: #e6ecf2;
+      --ink-soft: #aab6c3;
+      --wall: #080d14;
+      --wall-ink: #e6ecf2;
+      --floor-a: #1d2531;
+      --floor-b: #19202b;
+      --desk: #7d5636;
+      --desk-edge: #523720;
+      --monitor: #0c1118;
+      --screen-off: #2b3442;
+      --screen-on: #8fe3ff;
+      --lamp-off: #434d5b;
+      --lamp: #ffd25a;
+      --glow: rgba(255, 196, 70, .30);
+      --chair: #3d4858;
+      --plate: #243040;
+      --plate-edge: #3a475a;
+      --bubble: #273344;
+      --bubble-edge: #8fa0b5;
+      --panel: #182029;
+      --ok: #3ddc84;
+      --bad: #ff6b5e;
+      --banner-bg: #4a1a14;
+      --banner-ink: #ffdcd5;
+      --focus: #8cb8ff;
+      color-scheme: dark;
+    }
+  }
+
+  /* ---------- 바탕 ---------- */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    min-height: 100vh;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .emoji { font-family: var(--emoji); font-style: normal; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  /* ---------- 상단 바 ---------- */
+  .topbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+    padding: 12px 16px;
+    background: var(--wall); color: var(--wall-ink);
+    border-bottom: 4px solid var(--desk-edge);
+  }
+  .topbar h1 { margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -.01em; }
+  .topbar .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-left: auto; font-size: .95rem; }
+  .conn { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: #ff6b5e; box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
+  .conn.on .dot { background: #3ddc84; }
+  .count b { font-size: 1.1rem; }
+  .demo-tag { display: none; padding: 0 8px; border: 2px solid currentColor; border-radius: 4px; font-size: .85rem; font-weight: 700; }
+  body.demo .demo-tag { display: inline-block; }
+
+  /* ---------- 연결 배너 ---------- */
+  .banner {
+    display: none;
+    margin: 16px; padding: 16px 18px;
+    background: var(--banner-bg); color: var(--banner-ink);
+    border: 3px solid var(--bad); border-radius: 6px;
+    box-shadow: 4px 4px 0 var(--bad);
+  }
+  body.offline .banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+  .banner p { margin: 0; flex: 1 1 260px; }
+  .banner strong { display: block; font-size: 1.2rem; line-height: 1.35; }
+  .banner code { font-size: 1.05rem; font-weight: 700; background: rgba(0,0,0,.08); padding: 0 4px; border-radius: 3px; }
+  .btn {
+    min-height: 44px; padding: 8px 16px; cursor: pointer;
+    background: var(--wall); color: #fff; font-weight: 700;
+    border: 0; border-radius: 4px; box-shadow: 0 3px 0 var(--desk-edge);
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--desk-edge); }
+  @media (prefers-color-scheme: dark) { .btn { background: #e6ecf2; color: #121821; } }
+
+  /* ---------- 레이아웃 ---------- */
+  .layout {
+    display: grid; gap: 16px;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    padding: 16px; max-width: 1400px; margin: 0 auto;
+  }
+  @media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+  .office {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    align-content: start;
+  }
+
+  /* ---------- 방 ---------- */
+  .room {
+    --accent: var(--d-guest);
+    position: relative; min-width: 0;
+    background:
+      repeating-conic-gradient(var(--floor-a) 0 25%, var(--floor-b) 0 50%) 0 0 / 32px 32px;
+    border: 6px solid var(--wall);
+    border-top-width: 0;
+    border-radius: 6px;
+  }
+  .room.wide { grid-column: 1 / -1; }
+  .room[data-dept="전략실"] { --accent: var(--d-strategy); }
+  .room[data-dept="개발실"] { --accent: var(--d-dev); }
+  .room[data-dept="품질관리"] { --accent: var(--d-qa); }
+  .room[data-dept="크리에이티브"] { --accent: var(--d-creative); }
+  .room[data-dept="지식·운영"] { --accent: var(--d-ops); }
+  .room-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    background: var(--wall); color: var(--wall-ink);
+    border-bottom: 5px solid var(--accent);
+  }
+  .room-head h2 { margin: 0; font-size: 1rem; font-weight: 800; }
+  .room-head .busy { margin-left: auto; font-size: .875rem; }
+  .plant { position: absolute; right: 6px; bottom: 4px; font-size: 22px; pointer-events: none; }
+  .desks {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    padding: 12px 12px 30px;
+  }
+  @media (max-width: 400px) { .desks { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 10px 8px 30px; gap: 8px; } }
+  .empty { margin: 0; padding: 18px 12px 34px; color: var(--ink-soft); }
+
+  /* ---------- 책상 ---------- */
+  .desk {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    min-width: 0; padding: 6px 4px 8px; cursor: pointer;
+    background: transparent; border: 2px solid transparent; border-radius: 6px;
+    text-align: center;
+  }
+  .desk:hover { border-color: var(--plate-edge); border-style: dashed; }
+  .bubble {
+    position: relative; max-width: 100%;
+    padding: 2px 8px; font-size: .8125rem; line-height: 1.4;
+    background: var(--bubble); color: var(--ink);
+    border: 2px solid var(--bubble-edge); border-radius: 10px;
+    text-wrap: balance;
+  }
+  .bubble::after {
+    content: ""; position: absolute; left: 50%; bottom: -6px; width: 8px; height: 8px;
+    background: var(--bubble); border-right: 2px solid var(--bubble-edge); border-bottom: 2px solid var(--bubble-edge);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  .desk:not(.on) .bubble { color: var(--ink-soft); border-style: dashed; }
+  .scene { position: relative; display: block; width: 104px; height: 84px; margin-top: 2px; transition: opacity .4s, filter .4s; }
+  .desk:not(.on) .scene { opacity: .5; filter: saturate(.3); }
+  /* 일하는 책상 아래 따뜻한 불빛 */
+  .scene::before {
+    content: ""; position: absolute; inset: -14px -18px -6px; border-radius: 50%;
+    background: radial-gradient(closest-side, var(--glow), transparent);
+    opacity: 0; transition: opacity .4s;
+  }
+  .desk.on .scene::before { opacity: 1; }
+  .table {
+    position: absolute; left: 6px; right: 6px; top: 4px; height: 30px;
+    background: var(--desk); border-radius: 3px; box-shadow: 0 4px 0 var(--desk-edge);
+  }
+  .monitor {
+    position: absolute; left: 50%; top: 4px; width: 38px; height: 16px; margin-left: -19px;
+    background: var(--monitor); border-radius: 2px; padding: 2px;
+  }
+  .screen { display: block; width: 100%; height: 100%; background: var(--screen-off); border-radius: 1px; transition: background .3s, box-shadow .3s; }
+  .desk.on .screen { background: var(--screen-on); box-shadow: 0 0 10px 2px var(--screen-on); }
+  .lamp {
+    position: absolute; right: 6px; top: 8px; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--lamp-off); border: 2px solid var(--desk-edge);
+  }
+  .desk.on .lamp { background: var(--lamp); box-shadow: 0 0 10px 4px var(--glow); }
+  .paper { position: absolute; left: 7px; top: 9px; width: 12px; height: 14px; background: var(--plate); border-radius: 1px; transform: rotate(-8deg); }
+  .chair {
+    position: absolute; left: 50%; top: 42px; width: 38px; height: 38px; margin-left: -19px;
+    background: var(--chair); border-radius: 50% 50% 40% 40%;
+  }
+  .who {
+    position: absolute; left: 0; right: 0; top: 40px;
+    font-size: 30px; line-height: 40px; text-align: center;
+  }
+  .desk.on .who { animation: hop 1.1s steps(2, jump-none) infinite; }
+  .desk.on:nth-child(2n) .who { animation-delay: -.35s; }
+  .desk.on:nth-child(3n) .who { animation-delay: -.7s; }
+  @keyframes hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .badge {
+    display: none; position: absolute; right: 2px; top: 38px;
+    padding: 0 6px; font-size: .8125rem; font-weight: 800; line-height: 1.5;
+    background: var(--wall); color: var(--wall-ink); border-radius: 9px;
+  }
+  .desk.multi .badge { display: block; }
+  .plate {
+    display: block; max-width: 100%; padding: 2px 8px;
+    background: var(--plate); border: 2px solid var(--plate-edge); border-radius: 3px;
+    box-shadow: 0 2px 0 var(--plate-edge);
+  }
+  .plate b { display: block; font-size: .9375rem; font-weight: 800; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plate small { display: block; font-size: .8125rem; color: var(--ink-soft); line-height: 1.3; }
+  /* 손님석: 소파 */
+  .room.lounge .chair { width: 64px; margin-left: -32px; border-radius: 12px 12px 6px 6px; background: var(--d-guest); }
+  .room.lounge .table { left: 22px; right: 22px; border-radius: 50%; }
+  .room.lounge .monitor, .room.lounge .lamp { display: none; }
+  .room.lounge .plate b { white-space: normal; word-break: break-all; }
+  .room.lounge .paper { left: 50%; margin-left: -8px; width: 16px; height: 16px; border-radius: 50%; transform: none; background: #f4f4f4; }
+
+  /* ---------- 활동 로그 ---------- */
+  .log {
+    align-self: start; position: sticky; top: 16px;
+    background: var(--panel); border: 3px solid var(--wall); border-radius: 6px;
+    box-shadow: 4px 4px 0 var(--wall);
+  }
+  @media (max-width: 880px) { .log { position: static; } }
+  .log h2 { margin: 0; padding: 8px 12px; font-size: 1rem; background: var(--wall); color: var(--wall-ink); }
+  .log ol { list-style: none; margin: 0; padding: 4px 0; max-height: 70vh; overflow-y: auto; }
+  .log li { display: flex; gap: 10px; padding: 6px 12px; border-bottom: 1px dashed var(--plate-edge); }
+  .log li:last-child { border-bottom: 0; }
+  .log time { flex: none; color: var(--ink-soft); font-variant-numeric: tabular-nums; font-size: .875rem; padding-top: 1px; }
+  .log .none { color: var(--ink-soft); }
+
+  /* ---------- 직원 카드 ---------- */
+  .card {
+    position: absolute; z-index: 20; width: min(300px, calc(100vw - 32px));
+    padding: 14px 16px 16px;
+    background: var(--plate); color: var(--ink);
+    border: 3px solid var(--wall); border-radius: 6px; box-shadow: 5px 5px 0 var(--wall);
+  }
+  .card[hidden] { display: none; }
+  .card h3 { margin: 0 40px 2px 0; font-size: 1.125rem; }
+  .card .role { margin: 0 0 8px; color: var(--ink-soft); }
+  .card .ex { margin: 0; padding: 8px 10px; background: var(--page); border-radius: 4px; }
+  .card .ex span { display: block; font-size: .8125rem; color: var(--ink-soft); }
+  .card .key { margin: 8px 0 0; font-size: .8125rem; color: var(--ink-soft); }
+  .card .x {
+    position: absolute; right: 8px; top: 8px; width: 36px; height: 36px; cursor: pointer;
+    background: transparent; border: 2px solid var(--plate-edge); border-radius: 4px; font-size: 1.1rem; line-height: 1;
+  }
+  @media (max-width: 560px) {
+    .card { position: fixed; left: 16px !important; right: 16px; top: auto !important; bottom: 16px; width: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body class="offline">
+  <header class="topbar">
+    <h1>AI 팀 사무실</h1>
+    <div class="meta">
+      <span class="demo-tag">데모</span>
+      <span class="conn" id="conn"><span class="dot" aria-hidden="true"></span><span id="connText">연결 안 됨</span></span>
+      <span class="count" aria-live="polite">지금 일하는 중 <b id="count">0</b>명</span>
+    </div>
+  </header>
+
+  <div class="banner" id="banner" role="alert">
+    <p><strong>서버 연결 안 됨 — node office/server.js 로 켜세요</strong>
+      터미널에서 <code>node office/server.js</code> 를 실행하면 자동으로 다시 연결됩니다.</p>
+    <button class="btn" id="demoBtn" type="button" aria-pressed="false">데모 보기</button>
+  </div>
+
+  <div class="layout">
+    <main class="office" id="office" aria-label="사무실 평면도"></main>
+    <aside class="log" aria-labelledby="logTitle">
+      <h2 id="logTitle">최근 활동</h2>
+      <ol id="log"><li class="none">아직 기록이 없어요</li></ol>
+    </aside>
+  </div>
+
+  <div class="card" id="card" role="dialog" aria-labelledby="cardTitle" hidden>
+    <button class="x" type="button" id="cardClose" aria-label="카드 닫기">✕</button>
+    <h3 id="cardTitle"></h3>
+    <p class="role" id="cardRole"></p>
+    <p class="ex" id="cardEx"></p>
+    <p class="key" id="cardKey"></p>
+  </div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- 직원 명부 ----------
+  const ROSTER = [
+    { key: '(main)', emoji: '🌰', name: '쿠리만쥬', role: '대표·책사', dept: '전략실', ex: '그냥 말 걸면 돼요. "이번 주 할 일 정리해줘"' },
+    { key: 'orchestrator', emoji: '🐱', name: '하치와레', role: '실장·지휘', dept: '전략실', ex: '하치와레한테 이 기능 팀 꾸려서 진행시켜줘' },
+    { key: 'Explore', emoji: '🔭', name: '탐색가', role: '조사', dept: '개발실', ex: '탐색가한테 로그인 흐름이 어디 있는지 조사해줘' },
+    { key: 'Plan', emoji: '📐', name: '설계자', role: '설계', dept: '개발실', ex: '설계자한테 알림 기능 설계 잡아줘' },
+    { key: 'general-purpose', emoji: '🐹', name: '치이카와', role: '빌더', dept: '개발실', ex: '치이카와한테 설계대로 구현해줘' },
+    { key: 'precise-fixer', emoji: '🦁', name: '시사', role: '정밀수정공', dept: '개발실', ex: '시사한테 이 오타 하나만 고쳐줘' },
+    { key: 'pr-review-toolkit:code-reviewer', emoji: '🧐', name: '코드리뷰어', role: '리뷰', dept: '품질관리', ex: '코드리뷰어한테 방금 바꾼 거 리뷰해줘' },
+    { key: 'pr-review-toolkit:silent-failure-hunter', emoji: '🦦', name: '랏코', role: '에러헌터', dept: '품질관리', ex: '랏코한테 조용히 삼켜진 에러 없는지 찾아줘' },
+    { key: 'pr-review-toolkit:pr-test-analyzer', emoji: '🧪', name: '테스트분석가', role: '테스트', dept: '품질관리', ex: '테스트분석가한테 테스트 빠진 곳 봐줘' },
+    { key: 'pr-review-toolkit:code-simplifier', emoji: '🐰', name: '우사기', role: '단순화공', dept: '품질관리', ex: '우사기한테 이 함수 단순하게 다듬어줘' },
+    { key: 'designer', emoji: '🐿', name: '모몽가', role: '디자이너', dept: '크리에이티브', ex: '모몽가한테 이 화면 모바일에서 다듬어줘' },
+    { key: 'media', emoji: '🎬', name: '미디어팀', role: '미디어', dept: '크리에이티브', ex: '미디어팀한테 소개 이미지 만들어줘' },
+    { key: 'librarian', emoji: '📚', name: '후루혼야', role: '사서', dept: '지식·운영', ex: '후루혼야한테 오늘 작업 기록해줘' },
+    { key: 'ops', emoji: '🛡', name: '갑옷씨', role: '관리인', dept: '지식·운영', ex: '갑옷씨한테 서버 설정 점검해줘' },
+    { key: 'second-opinion', emoji: '🥷', name: '외부용병', role: '교차검증', dept: '지식·운영', ex: '외부용병한테 이 판단 교차검증 받아줘' },
+  ];
+  const DEPTS = ['전략실', '개발실', '품질관리', '크리에이티브', '지식·운영'];
+  const MAIN_KEY = '(main)';
+  const byKey = new Map(ROSTER.map(p => [p.key, p]));
+  const tail = s => { const i = s.lastIndexOf(':'); return i >= 0 ? s.slice(i + 1) : s; };
+  const byTail = new Map();
+  ROSTER.forEach(p => { if (p.key !== MAIN_KEY && !byTail.has(tail(p.key))) byTail.set(tail(p.key), p); });
+
+  // 정확 일치 우선, 다음 ":" 뒤 이름으로 매칭
+  function matchType(type) {
+    if (typeof type !== 'string' || !type) return null;
+    if (byKey.has(type) && type !== MAIN_KEY) return byKey.get(type);
+    return byTail.get(tail(type)) || null;
+  }
+
+  // ---------- 경고(중복 없이) ----------
+  const warned = new Set();
+  function warn(msg, detail) {
+    if (warned.has(msg)) return;
+    warned.add(msg);
+    console.warn('[office] ' + msg, detail === undefined ? '' : detail);
+  }
+
+  // ---------- 시간 표시 ----------
+  function fmtElapsed(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    if (s < 60) return s + '초';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + '분 ' + (s % 60) + '초';
+    return Math.floor(m / 60) + '시간 ' + (m % 60) + '분';
+  }
+  const pad = n => String(n).padStart(2, '0');
+  function fmtClock(t) {
+    const d = new Date(t);
+    return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
+  // ---------- DOM 만들기 ----------
+  const $ = id => document.getElementById(id);
+  const office = $('office');
+  const deskEls = new Map(); // key -> {el, bubble, badge}
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function makeDesk(person, label) {
+    const b = el('button', 'desk');
+    b.type = 'button';
+    const bubble = el('span', 'bubble', '💤 쉬는 중');
+    const scene = el('span', 'scene');
+    scene.setAttribute('aria-hidden', 'true');
+    const table = el('span', 'table');
+    const mon = el('span', 'monitor'); mon.appendChild(el('span', 'screen'));
+    table.append(el('span', 'paper'), mon, el('span', 'lamp'));
+    const badge = el('span', 'badge', '×2');
+    scene.append(table, el('span', 'chair'), el('span', 'who emoji', person.emoji), badge);
+    const plate = el('span', 'plate');
+    plate.append(el('b', null, label || person.name), el('small', null, person.role));
+    b.append(bubble, scene, plate);
+    b.addEventListener('click', () => openCard(person, b));
+    return { el: b, bubble, badge, person };
+  }
+
+  function makeRoom(name, extraCls) {
+    const sec = el('section', 'room' + (extraCls ? ' ' + extraCls : ''));
+    sec.dataset.dept = name;
+    const head = el('div', 'room-head');
+    const h = el('h2', null, name);
+    h.id = 'room-' + name;
+    sec.setAttribute('aria-labelledby', h.id);
+    const busy = el('span', 'busy', '');
+    head.append(h, busy);
+    const plant = el('span', 'plant emoji', '🪴');
+    plant.setAttribute('aria-hidden', 'true');
+    sec.append(head, plant);
+    return { sec, busy };
+  }
+
+  const roomBusy = new Map();
+  DEPTS.forEach(d => {
+    const r = makeRoom(d);
+    const grid = el('div', 'desks');
+    ROSTER.filter(p => p.dept === d).forEach(p => {
+      const dk = makeDesk(p);
+      deskEls.set(p.key, dk);
+      grid.appendChild(dk.el);
+    });
+    r.sec.appendChild(grid);
+    office.appendChild(r.sec);
+    roomBusy.set(d, r.busy);
+  });
+  const lounge = makeRoom('손님석', 'lounge wide');
+  const loungeGrid = el('div', 'desks');
+  const loungeEmpty = el('p', 'empty', '지금은 손님이 없어요. 명부에 없는 에이전트가 오면 여기 앉아요.');
+  lounge.sec.append(loungeEmpty, loungeGrid);
+  office.appendChild(lounge.sec);
+  let guestSig = '';
+  let guestEls = new Map();
+
+  // ---------- 상태 정규화 ----------
+  const isNum = v => typeof v === 'number' && isFinite(v);
+  function normalize(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      warn('응답이 객체가 아니에요. 빈 상태로 처리합니다.', raw);
+      raw = {};
+    }
+    let now = raw.now;
+    if (!isNum(now)) { warn('now 값이 숫자가 아니에요. 브라우저 시각을 씁니다.', now); now = Date.now(); }
+    let main = raw.main;
+    if (!main || typeof main !== 'object') { warn('main 값이 없거나 이상해요.', main); main = {}; }
+    const mainOut = { busy: !!main.busy, since: isNum(main.since) ? main.since : null };
+    if (main.since != null && !isNum(main.since)) warn('main.since 값이 숫자가 아니에요.', main.since);
+
+    let active = raw.active;
+    if (!Array.isArray(active)) { if (active !== undefined) warn('active 값이 배열이 아니에요.', active); active = []; }
+    const activeOut = [];
+    active.forEach(a => {
+      if (!a || typeof a !== 'object' || typeof a.type !== 'string' || !a.type) { warn('active 항목에 type 문자열이 없어요. 건너뜁니다.', a); return; }
+      activeOut.push({ id: a.id == null ? '' : String(a.id), type: a.type, since: isNum(a.since) ? a.since : null });
+    });
+
+    let recent = raw.recent;
+    if (!Array.isArray(recent)) { if (recent !== undefined) warn('recent 값이 배열이 아니에요.', recent); recent = []; }
+    const recentOut = [];
+    recent.slice(0, 20).forEach(r => {
+      if (!r || typeof r !== 'object' || typeof r.event !== 'string') { warn('recent 항목에 event 문자열이 없어요. 건너뜁니다.', r); return; }
+      recentOut.push({ t: isNum(r.t) ? r.t : null, event: r.event, type: typeof r.type === 'string' ? r.type : null, id: r.id == null ? null : String(r.id) });
+    });
+
+    return { now, offset: now - Date.now(), main: mainOut, active: activeOut, recent: recentOut };
+  }
+
+  // ---------- 그리기 ----------
+  let state = null;
+  const serverNow = () => Date.now() + (state ? state.offset : 0);
+
+  function setDesk(dk, on, since, count) {
+    dk.el.classList.toggle('on', on);
+    dk.el.classList.toggle('multi', count > 1);
+    dk.badge.textContent = '×' + count;
+    const text = on ? (since != null ? '작업 중 · ' + fmtElapsed(serverNow() - since) : '작업 중') : '💤 쉬는 중';
+    if (dk.bubble.textContent !== text) dk.bubble.textContent = text;
+    const p = dk.person;
+    const label = (dk.guestType || p.name) + ', ' + p.role + ', ' + (on ? text + (count > 1 ? ', ' + count + '명' : '') : '쉬는 중') + '. 눌러서 자세히 보기';
+    if (dk.el.getAttribute('aria-label') !== label) dk.el.setAttribute('aria-label', label);
+  }
+
+  function render() {
+    const s = state || { main: { busy: false, since: null }, active: [], recent: [] };
+    // 타입별로 묶기
+    const groups = new Map(); // key -> {count, since}
+    const guests = new Map(); // type -> {count, since}
+    s.active.forEach(a => {
+      const p = matchType(a.type);
+      const bucket = p ? groups : guests;
+      const k = p ? p.key : a.type;
+      const g = bucket.get(k) || { count: 0, since: null };
+      g.count++;
+      if (a.since != null && (g.since == null || a.since < g.since)) g.since = a.since;
+      bucket.set(k, g);
+    });
+
+    const deptCount = new Map(DEPTS.map(d => [d, 0]));
+    ROSTER.forEach(p => {
+      const dk = deskEls.get(p.key);
+      if (p.key === MAIN_KEY) {
+        setDesk(dk, s.main.busy, s.main.since, 1);
+        if (s.main.busy) deptCount.set(p.dept, deptCount.get(p.dept) + 1);
+      } else {
+        const g = groups.get(p.key);
+        setDesk(dk, !!g, g ? g.since : null, g ? g.count : 0);
+        if (g) deptCount.set(p.dept, deptCount.get(p.dept) + g.count);
+      }
+    });
+    deptCount.forEach((n, d) => { const t = n ? n + '명 근무 중' : ''; const b = roomBusy.get(d); if (b.textContent !== t) b.textContent = t; });
+
+    // 손님석
+    const sig = [...guests.keys()].sort().join('\n');
+    if (sig !== guestSig) {
+      guestSig = sig;
+      loungeGrid.textContent = '';
+      guestEls = new Map();
+      [...guests.keys()].sort().forEach(type => {
+        const person = { key: type, emoji: '🙂', name: type, role: '손님', dept: '손님석', ex: null };
+        const dk = makeDesk(person, type);
+        dk.guestType = type;
+        guestEls.set(type, dk);
+        loungeGrid.appendChild(dk.el);
+      });
+      loungeEmpty.hidden = guests.size > 0;
+    }
+    let guestTotal = 0;
+    guests.forEach((g, type) => { guestTotal += g.count; setDesk(guestEls.get(type), true, g.since, g.count); });
+    lounge.busy.textContent = guestTotal ? guestTotal + '명 방문 중' : '';
+
+    $('count').textContent = String((s.main.busy ? 1 : 0) + s.active.length);
+    renderLog(s.recent);
+  }
+
+  function describe(r) {
+    if (r.event === 'main_start') return '🌰 쿠리만쥬 작업 시작';
+    if (r.event === 'main_stop') return '🌰 쿠리만쥬 한숨 돌림';
+    if (r.event === 'session') return '🚪 새 세션이 열렸어요';
+    const p = matchType(r.type);
+    const who = p ? p.emoji + ' ' + p.name : '🙂 손님 ' + (r.type || '(이름 없음)');
+    if (r.event === 'start') return who + ' 출근';
+    if (r.event === 'stop') return who + ' 퇴근';
+    warn('알 수 없는 recent.event 값이에요.', r.event);
+    return who + ' · ' + r.event;
+  }
+
+  let logSig = '';
+  function renderLog(recent) {
+    const sig = recent.map(r => r.t + r.event + r.type + r.id).join('|');
+    if (sig === logSig) return;
+    logSig = sig;
+    const ol = $('log');
+    ol.textContent = '';
+    if (!recent.length) { ol.appendChild(el('li', 'none', '아직 기록이 없어요')); return; }
+    recent.forEach(r => {
+      const li = el('li');
+      const tm = el('time', null, r.t != null ? fmtClock(r.t) : '--:--:--');
+      if (r.t != null) tm.dateTime = new Date(r.t).toISOString();
+      li.append(tm, el('span', null, describe(r)));
+      ol.appendChild(li);
+    });
+  }
+
+  // ---------- 직원 카드 ----------
+  const card = $('card');
+  let cardFrom = null;
+  function openCard(p, from) {
+    cardFrom = from;
+    $('cardTitle').textContent = p.emoji + ' ' + p.name;
+    $('cardRole').textContent = p.dept + ' · ' + p.role;
+    const ex = $('cardEx');
+    ex.textContent = '';
+    if (p.ex) {
+      ex.append(el('span', null, '이렇게 불러요'), document.createTextNode(p.ex));
+    } else {
+      ex.append(el('span', null, '명부에 없는 에이전트'), document.createTextNode('팀 목록에 없는 agent_type 이라 손님석에 앉았어요.'));
+    }
+    $('cardKey').textContent = 'agent_type: ' + (p.key === MAIN_KEY ? '메인 대화' : p.key);
+    card.hidden = false;
+    const r = from.getBoundingClientRect();
+    const w = card.offsetWidth, h = card.offsetHeight;
+    let left = r.left + window.scrollX + r.width / 2 - w / 2;
+    left = Math.max(16 + window.scrollX, Math.min(left, window.scrollX + document.documentElement.clientWidth - w - 16));
+    let top = r.bottom + window.scrollY + 6;
+    if (r.bottom + h + 12 > window.innerHeight && r.top - h - 6 > 0) top = r.top + window.scrollY - h - 6;
+    card.style.left = left + 'px';
+    card.style.top = top + 'px';
+    $('cardClose').focus();
+  }
+  function closeCard() {
+    if (card.hidden) return;
+    card.hidden = true;
+    if (cardFrom && document.contains(cardFrom)) cardFrom.focus();
+  }
+  $('cardClose').addEventListener('click', closeCard);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
+  document.addEventListener('click', e => {
+    if (!card.hidden && !card.contains(e.target) && !(cardFrom && cardFrom.contains(e.target))) closeCard();
+  });
+
+  // ---------- 연결 상태 ----------
+  let connected = null;
+  function setConnected(on, err) {
+    if (on === connected) return;
+    connected = on;
+    document.body.classList.toggle('offline', !on);
+    $('conn').classList.toggle('on', on);
+    $('connText').textContent = on ? '연결됨' : '연결 안 됨';
+    if (on) { stopDemo(); console.info('[office] 서버에 연결됐어요.'); }
+    else console.warn('[office] 서버 연결 실패: /state 를 받을 수 없어요.', err || '');
+  }
+
+  async function poll() {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2500);
+      let res;
+      try { res = await fetch('/state', { cache: 'no-store', signal: ctrl.signal }); }
+      finally { clearTimeout(timer); }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      let json;
+      try { json = await res.json(); }
+      catch (e) { warn('/state 응답이 JSON이 아니에요.', e); throw e; }
+      setConnected(true);
+      state = normalize(json);
+      render();
+    } catch (e) {
+      setConnected(false, e);
+      if (!demo) { state = null; render(); }
+    } finally {
+      setTimeout(poll, 1000);
+    }
+  }
+
+  // ---------- 데모 모드 ----------
+  const SCRIPT = [
+    ['session'], ['main_start'], ['start', 'orchestrator'], ['start', 'Explore'], ['start', 'Plan'],
+    ['stop', 'Explore'], ['stop', 'Plan'], ['start', 'general-purpose'], ['start', 'general-purpose'],
+    ['start', 'designer'], ['start', 'claude'], ['stop', 'general-purpose'],
+    ['start', 'pr-review-toolkit:code-reviewer'], ['start', 'pr-review-toolkit:silent-failure-hunter'],
+    ['start', 'pr-review-toolkit:comment-analyzer'], ['stop', 'general-purpose'], ['stop', 'designer'],
+    ['stop', 'pr-review-toolkit:code-reviewer'], ['stop', 'claude'], ['start', 'code-simplifier'],
+    ['stop', 'pr-review-toolkit:silent-failure-hunter'], ['stop', 'pr-review-toolkit:comment-analyzer'],
+    ['stop', 'code-simplifier'], ['stop', 'orchestrator'], ['start', 'librarian'], ['stop', 'librarian'], ['main_stop'],
+  ];
+  let demo = null;
+  function demoStep() {
+    const d = demo, now = Date.now();
+    const [ev, type] = SCRIPT[d.i % SCRIPT.length];
+    d.i++;
+    if (d.i % SCRIPT.length === 1) { d.active = []; d.main = { busy: false, since: null }; }
+    const rec = { t: now, event: ev };
+    if (ev === 'main_start') d.main = { busy: true, since: now };
+    else if (ev === 'main_stop') d.main = { busy: false, since: null };
+    else if (ev === 'start') { const id = 'demo' + (d.seq++); d.active.push({ id, type, since: now - Math.floor(Math.random() * 40000) }); rec.type = type; rec.id = id; }
+    else if (ev === 'stop') { const i = d.active.findIndex(a => a.type === type); if (i >= 0) { rec.id = d.active[i].id; d.active.splice(i, 1); } rec.type = type; }
+    d.recent.unshift(rec);
+    d.recent.length = Math.min(d.recent.length, 20);
+    state = normalize({ now, main: d.main, active: d.active.slice(), recent: d.recent.slice() });
+    render();
+  }
+  function startDemo() {
+    if (demo) return;
+    demo = { i: 0, seq: 1, main: { busy: false, since: null }, active: [], recent: [], timer: 0 };
+    document.body.classList.add('demo');
+    $('demoBtn').textContent = '데모 끄기';
+    $('demoBtn').setAttribute('aria-pressed', 'true');
+    demoStep();
+    demo.timer = setInterval(demoStep, 2200);
+  }
+  function stopDemo() {
+    if (!demo) return;
+    clearInterval(demo.timer);
+    demo = null;
+    document.body.classList.remove('demo');
+    $('demoBtn').textContent = '데모 보기';
+    $('demoBtn').setAttribute('aria-pressed', 'false');
+    if (!connected) { state = null; render(); }
+  }
+  $('demoBtn').addEventListener('click', () => (demo ? stopDemo() : startDemo()));
+
+  // ---------- 시작 ----------
+  render();
+  setInterval(() => { if (state) render(); }, 1000); // 경과 시간 갱신
+  poll();
+})();
+</script>
+</body>
+</html>
