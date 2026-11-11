@@ -107,8 +107,8 @@ process.stdin.on('end', async () => {
     if (!line) return;
     rotateIfLarge();
     fs.appendFileSync(EVENTS, JSON.stringify(line) + '\n');
-    // 새로 시작하거나 이어서 열 때 사무실 서버를 자동으로 켠다
-    if (line.event === 'session' && (line.source === 'startup' || line.source === 'resume')) {
+    // 세션 시작 때와 질문을 보낼 때마다 확인한다 (이미 켜져 있으면 바로 끝남)
+    if (line.event === 'session' || line.event === 'user') {
       await require('./launch.js').ensureServer();
     }
   } catch (err) {
