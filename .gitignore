@@ -2,3 +2,5 @@ Lib/
 Scripts/
 Include/
 pyvenv.cfg
+# 2D 사무실 이벤트 기록
+office/events.jsonl
